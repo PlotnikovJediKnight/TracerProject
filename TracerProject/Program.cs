@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Text.Json.Serialization;
 
@@ -12,20 +15,63 @@ namespace TracerProject
 
     public class TimeTracer : ITracer
     {
+        void m3()
+        {
+            StartTrace();
+        }
+
+        void m2()
+        {
+            StartTrace();
+            m3();
+        }
+
+        void m1()
+        {
+            StartTrace();
+            m2();
+        }
+
+        static void Main(string[] args)
+        {
+            new TimeTracer().m1();
+            Console.ReadLine();
+        }
+
         private readonly object balanceLock = new object();
+        private TraseResult result = new TraseResult();
+
         public void StartTrace()
+        {
+            lock (balanceLock)
+            {
+                int threadId = Thread.CurrentThread.ManagedThreadId;
+                int index = result.getThreadIndex(threadId);
+
+                StackTrace stackTrace = new StackTrace(false);
+                for (int i = 1; i < stackTrace.FrameCount; ++i)
+                {
+                    string methodName = stackTrace.GetFrame(i).GetMethod().Name;
+                    string className  = stackTrace.GetFrame(i).GetMethod().DeclaringType.FullName;
+                    Console.WriteLine(methodName + " " + className);
+                }
+
+                Stopwatch stopWatch = new Stopwatch();
+                stopWatch.Start();
+            }
+        }
+
+        public void StopTrace()
         {
             lock (balanceLock)
             {
 
             }
         }
-        public void StopTrace()
-        {
-        }
+
         public TraseResult GetTraseResult()
         {
-            return null;
+            return result;
         }
 
     }
@@ -73,5 +119,23 @@ namespace TracerProject
         [XmlElement(ElementName = "thread")]
         [JsonPropertyNameAttribute("thread")]
         public List<ThreadInfo> Threads { get; set; }
+
+        public TraseResult()
+        {
+            Threads = new List<ThreadInfo>();
+        }
+
+        public int getThreadIndex(int id)
+        {
+            string id_string = id.ToString();
+            for(int i = 0; i < Threads.Count; ++i)
+            {
+                if (Threads[i].Id == id_string)
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
     }
 }
