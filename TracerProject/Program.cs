@@ -9,13 +9,20 @@ using System.Text.Json.Serialization;
 
 namespace TracerProject
 {
-    class A
+    class B
     {
         public ITracer t = new TimeTracer();
-        public void foo3() { t.StartTrace(); Thread.Sleep(3000); t.StopTrace(); }
-        public void foo2() { t.StartTrace(); foo3();             t.StopTrace(); }
-        public void foo1() { t.StartTrace(); foo2(); Thread.Sleep(2350); foo3();     t.StopTrace(); }
-        public void foo0() { t.StartTrace(); foo1();             t.StopTrace(); }
+        public void foo3() { t.StartTrace(); Thread.Sleep(10); t.StopTrace(); }
+        public void foo2() { t.StartTrace(); foo3(); t.StopTrace(); }
+        public void foo1() { t.StartTrace(); foo2(); Thread.Sleep(20); foo3(); t.StopTrace(); }
+        public void foo0() { t.StartTrace(); foo1(); t.StopTrace(); }
+    }
+
+    class A
+    {
+        public B obj;
+
+        public B getInnerObject() { return obj; }
     }
 
     #region ITracer
@@ -32,12 +39,20 @@ namespace TracerProject
         static void Main(string[] args)
         {
             A obj1 = new A();
+            obj1.obj = new B();
 
-            Task task1 = new Task(obj1.foo0);
-            task1.Start();
-            obj1.foo0();
+            //Task task1 = new Task(obj1.obj.foo0);
+            //task1.Start();
 
-            task1.Wait();
+            obj1.obj.foo0();
+            //obj1.obj.foo2();
+            //obj1.obj.foo2();
+            obj1.obj.foo0();
+
+            obj1.obj.foo1();
+            obj1.obj.foo1();
+
+            //task1.Wait();
             Console.WriteLine("Finished");
 
             XmlSerializer formatter = new XmlSerializer(typeof(TraceResult));
@@ -45,7 +60,7 @@ namespace TracerProject
             // получаем поток, куда будем записывать сериализованный объект
             using (FileStream fs = new FileStream("result.xml", FileMode.Create))
             {
-                formatter.Serialize(fs, obj1.t.GetTraceResult());
+                formatter.Serialize(fs, obj1.obj.t.GetTraceResult());
 
                 Console.WriteLine("Объект сериализован");
             }
@@ -57,11 +72,13 @@ namespace TracerProject
         {
             StackTrace stackTrace = new StackTrace(false);
             List<Tuple<String, String>> methodsClassesNames = new List<Tuple<String, String>>();
+            string classWrapperName = stackTrace.GetFrame(2).GetMethod().DeclaringType.FullName;
             for (int i = 2; i < stackTrace.FrameCount - 1; ++i)
             {
                 string methodName = stackTrace.GetFrame(i).GetMethod().Name;
                 if ("InnerInvoke".Equals(methodName)) break;
                 string className = stackTrace.GetFrame(i).GetMethod().DeclaringType.FullName;
+                if (!classWrapperName.Equals(className)) break;
                 methodsClassesNames.Add(new Tuple<String, String>(className, methodName));
             }
             return methodsClassesNames;
@@ -113,12 +130,14 @@ namespace TracerProject
     [XmlRoot(ElementName = "method")]
     public class MethodInfo
     {
+        private static int innerCount = 0;
         public MethodInfo() { }
         public MethodInfo(string methodName, string className)
         {
             Methods = new List<MethodInfo>();
             Name = methodName;
             Class = className;
+            innerId = innerCount++;
         }
 
         public int getIndexMethod(Tuple<String, String> methodClassName)
@@ -126,7 +145,8 @@ namespace TracerProject
             for (int i = 0; i < Methods.Count; ++i)
             {
                 if (string.Equals(methodClassName.Item1, Methods[i].Class) &&
-                    string.Equals(methodClassName.Item2, Methods[i].Name))
+                    string.Equals(methodClassName.Item2, Methods[i].Name)  &&
+                    Methods[i].innerId != -1)
                 {
                     return i;
                 }
@@ -144,6 +164,7 @@ namespace TracerProject
         {
             innerClock.Stop();
             Time = innerClock.ElapsedMilliseconds + "ms";
+            innerId = -1;
         }
 
         [XmlAttribute(AttributeName = "name")]
@@ -163,6 +184,7 @@ namespace TracerProject
         public List<MethodInfo> Methods { get; set; }
 
         private Stopwatch innerClock = null;
+        private int innerId;
     }
     #endregion MethodInfo
 
