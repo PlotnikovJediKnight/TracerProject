@@ -12,9 +12,9 @@ namespace TracerProject
     class B
     {
         public ITracer t = new TimeTracer();
-        public void foo3() { t.StartTrace(); Thread.Sleep(10); t.StopTrace(); }
+        public void foo3() { t.StartTrace(); Thread.Sleep(7); t.StopTrace(); }
         public void foo2() { t.StartTrace(); foo3(); t.StopTrace(); }
-        public void foo1() { t.StartTrace(); foo2(); Thread.Sleep(20); foo3(); t.StopTrace(); }
+        public void foo1() { t.StartTrace(); foo2(); Thread.Sleep(5); foo3(); t.StopTrace(); }
         public void foo0() { t.StartTrace(); foo1(); t.StopTrace(); }
     }
 
@@ -41,18 +41,18 @@ namespace TracerProject
             A obj1 = new A();
             obj1.obj = new B();
 
-            //Task task1 = new Task(obj1.obj.foo0);
-            //task1.Start();
+            Task task1 = new Task(obj1.obj.foo0);
+            task1.Start();
 
             obj1.obj.foo0();
-            //obj1.obj.foo2();
-            //obj1.obj.foo2();
+            obj1.obj.foo2();
+            obj1.obj.foo2();
             obj1.obj.foo0();
 
             obj1.obj.foo1();
             obj1.obj.foo1();
 
-            //task1.Wait();
+            task1.Wait();
             Console.WriteLine("Finished");
 
             XmlSerializer formatter = new XmlSerializer(typeof(TraceResult));
@@ -118,6 +118,10 @@ namespace TracerProject
 
         public TraceResult GetTraceResult()
         {
+            for (int i = 0; i < result.Threads.Count; ++i)
+            {
+                result.Threads[i].countThreadTimeTotal();
+            }
             return result;
         }
 
@@ -183,6 +187,9 @@ namespace TracerProject
         [JsonPropertyNameAttribute("method")]
         public List<MethodInfo> Methods { get; set; }
 
+        public int getInnerId() { return innerId; }
+        public Stopwatch getInnerClock() { return innerClock; }
+
         private Stopwatch innerClock = null;
         private int innerId;
     }
@@ -204,7 +211,8 @@ namespace TracerProject
             for (int i = 0; i < Methods.Count; ++i)
             {
                 if (string.Equals(methodClassName.Item1, Methods[i].Class) &&
-                    string.Equals(methodClassName.Item2, Methods[i].Name))
+                    string.Equals(methodClassName.Item2, Methods[i].Name) &&
+                    Methods[i].getInnerId() != -1)
                 {
                     return i;
                 }
@@ -223,6 +231,16 @@ namespace TracerProject
         [XmlAttribute(AttributeName = "time")]
         [JsonPropertyNameAttribute("time")]
         public string Time { get; set; }
+
+        public void countThreadTimeTotal()
+        {
+            long total = 0;
+            for (int i = 0; i < Methods.Count; ++i)
+            {
+                total += Methods[i].getInnerClock().ElapsedMilliseconds;
+            }
+            Time = total.ToString() + "ms";
+        }
 
     }
     #endregion ThreadInfo
