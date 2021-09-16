@@ -49,12 +49,21 @@ namespace TracerProject
                 int index = result.getThreadIndex(threadId);
 
                 StackTrace stackTrace = new StackTrace(false);
+                List<Tuple<String, String>> methodsClassesNames = new List<Tuple<String, String>>(); 
                 for (int i = 1; i < stackTrace.FrameCount; ++i)
                 {
                     string methodName = stackTrace.GetFrame(i).GetMethod().Name;
                     string className  = stackTrace.GetFrame(i).GetMethod().DeclaringType.FullName;
-                    Console.WriteLine(methodName + " " + className);
+                    methodsClassesNames.Add(new Tuple<String, String>(className, methodName));
                 }
+
+                if (index == -1)
+                {
+                    result.Threads.Add(new ThreadInfo(threadId));
+                    index = result.Threads.Count - 1;
+                }
+
+                result.insertMethodInformation(methodsClassesNames, index);
 
                 Stopwatch stopWatch = new Stopwatch();
                 stopWatch.Start();
@@ -99,6 +108,12 @@ namespace TracerProject
     [XmlRoot(ElementName = "thread")]
     public class ThreadInfo
     {
+        public ThreadInfo(int id)
+        {
+            Methods = new List<MethodInfo>();
+            Id = id.ToString();
+        }
+
         [XmlElement(ElementName = "method")]
         [JsonPropertyNameAttribute("method")]
         public List<MethodInfo> Methods { get; set; }
@@ -136,6 +151,11 @@ namespace TracerProject
                 }
             }
             return -1;
+        }
+
+        public void insertMethodInformation(List<Tuple<String, String>> methodsClassesNames, int threadId)
+        {
+
         }
     }
 }
