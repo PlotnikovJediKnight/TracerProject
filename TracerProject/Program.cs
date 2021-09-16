@@ -1,52 +1,71 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
+using System.IO;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using System.Text.Json.Serialization;
 
 namespace TracerProject
 {
+    class A
+    {
+        public ITracer t = new TimeTracer();
+        public void foo3() { t.StartTrace(); Thread.Sleep(3000); t.StopTrace(); }
+        public void foo2() { t.StartTrace(); foo3();             t.StopTrace(); }
+        public void foo1() { t.StartTrace(); foo2(); Thread.Sleep(2350); foo3();     t.StopTrace(); }
+        public void foo0() { t.StartTrace(); foo1();             t.StopTrace(); }
+    }
+
+    #region ITracer
     public interface ITracer{
         void StartTrace();
         void StopTrace();
-        TraseResult GetTraseResult();
+        TraceResult GetTraceResult();
     }
+    #endregion
 
+    #region TimeTracer
     public class TimeTracer : ITracer
     {
-        void m3()
-        {
-            StartTrace();
-            Thread.Sleep(3000);
-            StopTrace();
-        }
-
-        void m2()
-        {
-            StartTrace();
-            Thread.Sleep(1500);
-            m3();
-            StopTrace();
-        }
-
-        void m1()
-        {
-            StartTrace();
-            m2();
-            Thread.Sleep(1000);
-            m3();
-            StopTrace();
-        }
-
         static void Main(string[] args)
         {
-            new TimeTracer().m1();
+            A obj1 = new A();
+
+            Task task1 = new Task(obj1.foo0);
+            task1.Start();
+            obj1.foo0();
+
+            task1.Wait();
+            Console.WriteLine("Finished");
+
+            XmlSerializer formatter = new XmlSerializer(typeof(TraceResult));
+
+            // получаем поток, куда будем записывать сериализованный объект
+            using (FileStream fs = new FileStream("result.xml", FileMode.Create))
+            {
+                formatter.Serialize(fs, obj1.t.GetTraceResult());
+
+                Console.WriteLine("Объект сериализован");
+            }
+
             Console.ReadLine();
         }
 
-        private readonly object balanceLock = new object();
-        private TraseResult result = new TraseResult();
+        private List<Tuple<String, String>> getMethodsClassesList()
+        {
+            StackTrace stackTrace = new StackTrace(false);
+            List<Tuple<String, String>> methodsClassesNames = new List<Tuple<String, String>>();
+            for (int i = 2; i < stackTrace.FrameCount - 1; ++i)
+            {
+                string methodName = stackTrace.GetFrame(i).GetMethod().Name;
+                if ("InnerInvoke".Equals(methodName)) break;
+                string className = stackTrace.GetFrame(i).GetMethod().DeclaringType.FullName;
+                methodsClassesNames.Add(new Tuple<String, String>(className, methodName));
+            }
+            return methodsClassesNames;
+        }
 
         public void StartTrace()
         {
@@ -55,16 +74,9 @@ namespace TracerProject
                 int threadId = Thread.CurrentThread.ManagedThreadId;
                 int index = result.getThreadIndex(threadId);
 
-                StackTrace stackTrace = new StackTrace(false);
-                List<Tuple<String, String>> methodsClassesNames = new List<Tuple<String, String>>(); 
-                for (int i = 1; i < stackTrace.FrameCount; ++i)
-                {
-                    string methodName = stackTrace.GetFrame(i).GetMethod().Name;
-                    string className  = stackTrace.GetFrame(i).GetMethod().DeclaringType.FullName;
-                    methodsClassesNames.Add(new Tuple<String, String>(className, methodName));
-                }
+                List<Tuple<String, String>> methodsClassesNames = getMethodsClassesList(); 
 
-                if (index == -1)
+                if (index == -1) 
                 {
                     result.Threads.Add(new ThreadInfo(threadId));
                     index = result.Threads.Count - 1;
@@ -81,29 +93,27 @@ namespace TracerProject
                 int threadId = Thread.CurrentThread.ManagedThreadId;
                 int index = result.getThreadIndex(threadId);
 
-                StackTrace stackTrace = new StackTrace(false);
-                List<Tuple<String, String>> methodsClassesNames = new List<Tuple<String, String>>();
-                for (int i = 1; i < stackTrace.FrameCount; ++i)
-                {
-                    string methodName = stackTrace.GetFrame(i).GetMethod().Name;
-                    string className = stackTrace.GetFrame(i).GetMethod().DeclaringType.FullName;
-                    methodsClassesNames.Add(new Tuple<String, String>(className, methodName));
-                }
+                List<Tuple<String, String>> methodsClassesNames = getMethodsClassesList();
 
                 result.calculateMethodInformation(methodsClassesNames, index);
             }
         }
 
-        public TraseResult GetTraseResult()
+        public TraceResult GetTraceResult()
         {
             return result;
         }
 
+        private readonly object balanceLock = new object();
+        private TraceResult result = new TraceResult();
     }
+    #endregion
 
+    #region MethodInfo
     [XmlRoot(ElementName = "method")]
     public class MethodInfo
     {
+        public MethodInfo() { }
         public MethodInfo(string methodName, string className)
         {
             Methods = new List<MethodInfo>();
@@ -115,8 +125,8 @@ namespace TracerProject
         {
             for (int i = 0; i < Methods.Count; ++i)
             {
-                if (string.Equals(methodClassName.Item1, Methods[i].Name) &&
-                    string.Equals(methodClassName.Item2, Methods[i].Class))
+                if (string.Equals(methodClassName.Item1, Methods[i].Class) &&
+                    string.Equals(methodClassName.Item2, Methods[i].Name))
                 {
                     return i;
                 }
@@ -134,7 +144,6 @@ namespace TracerProject
         {
             innerClock.Stop();
             Time = innerClock.ElapsedMilliseconds + "ms";
-            Console.WriteLine(Class + " " + Name + " " + Time);
         }
 
         [XmlAttribute(AttributeName = "name")]
@@ -155,10 +164,13 @@ namespace TracerProject
 
         private Stopwatch innerClock = null;
     }
+    #endregion MethodInfo
 
+    #region ThreadInfo
     [XmlRoot(ElementName = "thread")]
     public class ThreadInfo
     {
+        public ThreadInfo() { }
         public ThreadInfo(int id)
         {
             Methods = new List<MethodInfo>();
@@ -169,8 +181,8 @@ namespace TracerProject
         {
             for (int i = 0; i < Methods.Count; ++i)
             {
-                if (string.Equals(methodClassName.Item1, Methods[i].Name) &&
-                    string.Equals(methodClassName.Item2, Methods[i].Class))
+                if (string.Equals(methodClassName.Item1, Methods[i].Class) &&
+                    string.Equals(methodClassName.Item2, Methods[i].Name))
                 {
                     return i;
                 }
@@ -191,19 +203,18 @@ namespace TracerProject
         public string Time { get; set; }
 
     }
+    #endregion ThreadInfo
 
-
+    #region TraceResult
     [XmlRoot(ElementName = "traceResult")]
-    public class TraseResult {
+    [Serializable]
+    public class TraceResult {
 
         [XmlElement(ElementName = "thread")]
         [JsonPropertyNameAttribute("thread")]
-        public List<ThreadInfo> Threads { get; set; }
+        public List<ThreadInfo> Threads { get; set; } = new List<ThreadInfo>();
 
-        public TraseResult()
-        {
-            Threads = new List<ThreadInfo>();
-        }
+        public TraceResult() { }
 
         public int getThreadIndex(int id)
         {
@@ -218,27 +229,13 @@ namespace TracerProject
             return -1;
         }
 
-        public void insertMethodInformation(List<Tuple<String, String>> methodsClassesNames, int threadId)
+        public MethodInfo getFinalMethodRef(List<Tuple<String, String>> methodsClassesNames, MethodInfo methodRef)
         {
-            ThreadInfo currThread = Threads[threadId];
-            Tuple<String, String> nameClassTuple = methodsClassesNames[methodsClassesNames.Count - 1];
-
-            int methodIndex = currThread.getIndexMethod(nameClassTuple);
-            string methodName = nameClassTuple.Item1;
-            string className  = nameClassTuple.Item2;
-
-            if (methodIndex == -1)
-            {
-                currThread.Methods.Add(new MethodInfo(methodName, className));
-                methodIndex = currThread.Methods.Count - 1;
-            }
-
-            MethodInfo methodRef = currThread.Methods[methodIndex];
             for (int i = methodsClassesNames.Count - 2; i >= 0; --i)
             {
-                nameClassTuple = methodsClassesNames[i];
-                methodName = nameClassTuple.Item1;
-                className  = nameClassTuple.Item2;
+                Tuple<String, String> nameClassTuple = methodsClassesNames[i];
+                string className = nameClassTuple.Item1;
+                string methodName = nameClassTuple.Item2;
 
                 int nextMethodIndex = methodRef.getIndexMethod(methodsClassesNames[i]);
                 if (nextMethodIndex == -1)
@@ -249,6 +246,25 @@ namespace TracerProject
 
                 methodRef = methodRef.Methods[nextMethodIndex];
             }
+            return methodRef;
+        }
+
+        public void insertMethodInformation(List<Tuple<String, String>> methodsClassesNames, int threadId)
+        {
+            ThreadInfo currThread = Threads[threadId];
+            Tuple<String, String> nameClassTuple = methodsClassesNames[methodsClassesNames.Count - 1];
+
+            int methodIndex = currThread.getIndexMethod(nameClassTuple);
+            string className  = nameClassTuple.Item1;
+            string methodName = nameClassTuple.Item2;
+
+            if (methodIndex == -1)
+            {
+                currThread.Methods.Add(new MethodInfo(methodName, className));
+                methodIndex = currThread.Methods.Count - 1;
+            }
+
+            MethodInfo methodRef = getFinalMethodRef(methodsClassesNames, currThread.Methods[methodIndex]);
 
             methodRef.startCountdown();
         }
@@ -259,27 +275,13 @@ namespace TracerProject
             Tuple<String, String> nameClassTuple = methodsClassesNames[methodsClassesNames.Count - 1];
 
             int methodIndex = currThread.getIndexMethod(nameClassTuple);
-            string methodName = nameClassTuple.Item1;
-            string className = nameClassTuple.Item2;
+            string className = nameClassTuple.Item1;
+            string methodName = nameClassTuple.Item2;
 
-            MethodInfo methodRef = currThread.Methods[methodIndex];
-            for (int i = methodsClassesNames.Count - 2; i >= 0; --i)
-            {
-                nameClassTuple = methodsClassesNames[i];
-                methodName = nameClassTuple.Item1;
-                className = nameClassTuple.Item2;
-
-                int nextMethodIndex = methodRef.getIndexMethod(methodsClassesNames[i]);
-                if (nextMethodIndex == -1)
-                {
-                    methodRef.Methods.Add(new MethodInfo(methodName, className));
-                    nextMethodIndex = methodRef.Methods.Count - 1;
-                }
-
-                methodRef = methodRef.Methods[nextMethodIndex];
-            }
+            MethodInfo methodRef = getFinalMethodRef(methodsClassesNames, currThread.Methods[methodIndex]);
 
             methodRef.finishCountdown();
         }
     }
+    #endregion TraceResult
 }
