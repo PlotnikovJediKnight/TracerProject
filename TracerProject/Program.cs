@@ -9,21 +9,6 @@ using System.Text.Json.Serialization;
 
 namespace TracerProject
 {
-    class B
-    {
-        public ITracer t = new TimeTracer();
-        public void foo3() { t.StartTrace(); Thread.Sleep(7); t.StopTrace(); }
-        public void foo2() { t.StartTrace(); foo3(); t.StopTrace(); }
-        public void foo1() { t.StartTrace(); foo2(); Thread.Sleep(5); foo3(); t.StopTrace(); }
-        public void foo0() { t.StartTrace(); foo1(); t.StopTrace(); }
-    }
-
-    class A
-    {
-        public B obj;
-
-        public B getInnerObject() { return obj; }
-    }
 
     #region ITracer
     public interface ITracer{
@@ -33,34 +18,48 @@ namespace TracerProject
     }
     #endregion
 
+    class A
+    {
+        public ITracer it = new TimeTracer();
+        public void foo()
+        {
+            it.StartTrace();
+            Thread.Sleep(520);
+            it.StopTrace();
+        }
+
+        public void bar()
+        {
+            it.StartTrace();
+            Thread.Sleep(370);
+            it.StopTrace();
+        }
+
+        public void tool()
+        {
+            foo();
+            bar();
+        }
+    }
+
     #region TimeTracer
     public class TimeTracer : ITracer
     {
         static void Main(string[] args)
         {
             A obj1 = new A();
-            obj1.obj = new B();
-
-            Task task1 = new Task(obj1.obj.foo0);
-            task1.Start();
-
-            obj1.obj.foo0();
-            obj1.obj.foo2();
-            obj1.obj.foo2();
-            obj1.obj.foo0();
-
-            obj1.obj.foo1();
-            obj1.obj.foo1();
-
-            task1.Wait();
+            obj1.foo();
+            obj1.bar();
+            obj1.foo();
+            obj1.foo();
+            obj1.bar();
+            obj1.tool();
             Console.WriteLine("Finished");
 
             XmlSerializer formatter = new XmlSerializer(typeof(TraceResult));
-
-            // получаем поток, куда будем записывать сериализованный объект
             using (FileStream fs = new FileStream("result.xml", FileMode.Create))
             {
-                formatter.Serialize(fs, obj1.obj.t.GetTraceResult());
+                formatter.Serialize(fs, obj1.it.GetTraceResult());
 
                 Console.WriteLine("Объект сериализован");
             }
@@ -189,6 +188,7 @@ namespace TracerProject
 
         public int getInnerId() { return innerId; }
         public Stopwatch getInnerClock() { return innerClock; }
+        public long getInnerClockTime() { if (innerClock == null) return 0; else return innerClock.ElapsedMilliseconds; }
 
         private Stopwatch innerClock = null;
         private int innerId;
@@ -237,7 +237,17 @@ namespace TracerProject
             long total = 0;
             for (int i = 0; i < Methods.Count; ++i)
             {
-                total += Methods[i].getInnerClock().ElapsedMilliseconds;
+                MethodInfo currMethod = Methods[i];
+                if (currMethod.getInnerClock() == null)
+                {
+                    List<MethodInfo> nextBatch = currMethod.Methods;
+                    this.Methods.RemoveAt(i);
+                    this.Methods.InsertRange(i, nextBatch);
+                }
+                else
+                {
+                    total += currMethod.getInnerClockTime();
+                }
             }
             Time = total.ToString() + "ms";
         }
