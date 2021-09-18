@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-16"?>
+<traceResult xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <thread id="1" time="891ms">
+    <method name="M1" class="SerializatorProject.C" time="274ms">
+      <method name="M3" class="SerializatorProject.C" time="174ms">
+        <method name="M4" class="SerializatorProject.C" time="62ms">
+          <method name="M5" class="SerializatorProject.ZoZo" time="21ms">
+            <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+          </method>
+          <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+        </method>
+      </method>
+    </method>
+    <method name="M2" class="SerializatorProject.C" time="474ms">
+      <method name="M3" class="SerializatorProject.C" time="174ms">
+        <method name="M4" class="SerializatorProject.C" time="62ms">
+          <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+            <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+          </method>
+          <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+        </method>
+      </method>
+    </method>
+    <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+      <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+    </method>
+    <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+    <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+    <method name="M5" class="SerializatorProject.ZoZo" time="21ms">
+      <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+    </method>
+    <method name="M4" class="SerializatorProject.C" time="62ms">
+      <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+        <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+      </method>
+      <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+    </method>
+  </thread>
+  <thread id="3" time="891ms">
+    <method name="M1" class="SerializatorProject.C" time="275ms">
+      <method name="M3" class="SerializatorProject.C" time="174ms">
+        <method name="M4" class="SerializatorProject.C" time="62ms">
+          <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+            <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+          </method>
+          <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+        </method>
+      </method>
+    </method>
+    <method name="M2" class="SerializatorProject.C" time="474ms">
+      <method name="M3" class="SerializatorProject.C" time="174ms">
+        <method name="M4" class="SerializatorProject.C" time="62ms">
+          <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+            <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+          </method>
+          <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+        </method>
+      </method>
+    </method>
+    <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+      <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+    </method>
+    <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+    <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+    <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+      <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+    </method>
+    <method name="M4" class="SerializatorProject.C" time="62ms">
+      <method name="M5" class="SerializatorProject.ZoZo" time="20ms">
+        <method name="M8" class="SerializatorProject.ZoZo" time="0ms" />
+      </method>
+      <method name="M6" class="SerializatorProject.ZoZo" time="20ms" />
+    </method>
+  </thread>
+</traceResult>

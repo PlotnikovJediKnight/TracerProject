@@ -1,0 +1,284 @@
+{
+  "threads": [
+    {
+      "id": "1",
+      "time": "891ms",
+      "methods": [
+        {
+          "name": "M1",
+          "class": "SerializatorProject.C",
+          "time": "274ms",
+          "methods": [
+            {
+              "name": "M3",
+              "class": "SerializatorProject.C",
+              "time": "174ms",
+              "methods": [
+                {
+                  "name": "M4",
+                  "class": "SerializatorProject.C",
+                  "time": "62ms",
+                  "methods": [
+                    {
+                      "name": "M5",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "21ms",
+                      "methods": [
+                        {
+                          "name": "M8",
+                          "class": "SerializatorProject.ZoZo",
+                          "time": "0ms"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "M6",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "20ms"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "M2",
+          "class": "SerializatorProject.C",
+          "time": "474ms",
+          "methods": [
+            {
+              "name": "M3",
+              "class": "SerializatorProject.C",
+              "time": "174ms",
+              "methods": [
+                {
+                  "name": "M4",
+                  "class": "SerializatorProject.C",
+                  "time": "62ms",
+                  "methods": [
+                    {
+                      "name": "M5",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "20ms",
+                      "methods": [
+                        {
+                          "name": "M8",
+                          "class": "SerializatorProject.ZoZo",
+                          "time": "0ms"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "M6",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "20ms"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "M5",
+          "class": "SerializatorProject.ZoZo",
+          "time": "20ms",
+          "methods": [
+            {
+              "name": "M8",
+              "class": "SerializatorProject.ZoZo",
+              "time": "0ms"
+            }
+          ]
+        },
+        {
+          "name": "M6",
+          "class": "SerializatorProject.ZoZo",
+          "time": "20ms"
+        },
+        {
+          "name": "M6",
+          "class": "SerializatorProject.ZoZo",
+          "time": "20ms"
+        },
+        {
+          "name": "M5",
+          "class": "SerializatorProject.ZoZo",
+          "time": "21ms",
+          "methods": [
+            {
+              "name": "M8",
+              "class": "SerializatorProject.ZoZo",
+              "time": "0ms"
+            }
+          ]
+        },
+        {
+          "name": "M4",
+          "class": "SerializatorProject.C",
+          "time": "62ms",
+          "methods": [
+            {
+              "name": "M5",
+              "class": "SerializatorProject.ZoZo",
+              "time": "20ms",
+              "methods": [
+                {
+                  "name": "M8",
+                  "class": "SerializatorProject.ZoZo",
+                  "time": "0ms"
+                }
+              ]
+            },
+            {
+              "name": "M6",
+              "class": "SerializatorProject.ZoZo",
+              "time": "20ms"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "time": "891ms",
+      "methods": [
+        {
+          "name": "M1",
+          "class": "SerializatorProject.C",
+          "time": "275ms",
+          "methods": [
+            {
+              "name": "M3",
+              "class": "SerializatorProject.C",
+              "time": "174ms",
+              "methods": [
+                {
+                  "name": "M4",
+                  "class": "SerializatorProject.C",
+                  "time": "62ms",
+                  "methods": [
+                    {
+                      "name": "M5",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "20ms",
+                      "methods": [
+                        {
+                          "name": "M8",
+                          "class": "SerializatorProject.ZoZo",
+                          "time": "0ms"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "M6",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "20ms"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "M2",
+          "class": "SerializatorProject.C",
+          "time": "474ms",
+          "methods": [
+            {
+              "name": "M3",
+              "class": "SerializatorProject.C",
+              "time": "174ms",
+              "methods": [
+                {
+                  "name": "M4",
+                  "class": "SerializatorProject.C",
+                  "time": "62ms",
+                  "methods": [
+                    {
+                      "name": "M5",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "20ms",
+                      "methods": [
+                        {
+                          "name": "M8",
+                          "class": "SerializatorProject.ZoZo",
+                          "time": "0ms"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "M6",
+                      "class": "SerializatorProject.ZoZo",
+                      "time": "20ms"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "M5",
+          "class": "SerializatorProject.ZoZo",
+          "time": "20ms",
+          "methods": [
+            {
+              "name": "M8",
+              "class": "SerializatorProject.ZoZo",
+              "time": "0ms"
+            }
+          ]
+        },
+        {
+          "name": "M6",
+          "class": "SerializatorProject.ZoZo",
+          "time": "20ms"
+        },
+        {
+          "name": "M6",
+          "class": "SerializatorProject.ZoZo",
+          "time": "20ms"
+        },
+        {
+          "name": "M5",
+          "class": "SerializatorProject.ZoZo",
+          "time": "20ms",
+          "methods": [
+            {
+              "name": "M8",
+              "class": "SerializatorProject.ZoZo",
+              "time": "0ms"
+            }
+          ]
+        },
+        {
+          "name": "M4",
+          "class": "SerializatorProject.C",
+          "time": "62ms",
+          "methods": [
+            {
+              "name": "M5",
+              "class": "SerializatorProject.ZoZo",
+              "time": "20ms",
+              "methods": [
+                {
+                  "name": "M8",
+                  "class": "SerializatorProject.ZoZo",
+                  "time": "0ms"
+                }
+              ]
+            },
+            {
+              "name": "M6",
+              "class": "SerializatorProject.ZoZo",
+              "time": "20ms"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
