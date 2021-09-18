@@ -187,6 +187,10 @@ namespace TracerProject
         [JsonProperty("methods")]
         public List<MethodInfo> Methods { get; set; }
 
+        private long longTime = 0;
+
+        public long getLongTime() { return longTime; }
+
         public bool ShouldSerializeMethods() { return Methods.Count > 0; }
 
         public void countThreadTimeTotal()
@@ -207,6 +211,7 @@ namespace TracerProject
                     total += currMethod.getInnerClockTime();
                 }
             }
+            longTime = total;
             Time = total.ToString() + "ms";
         }
 
