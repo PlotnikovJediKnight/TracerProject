@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,5 +37,37 @@ namespace SerializatorProject
         }
         
         static void Main(String[] args) { }
+    }
+
+    public abstract class SerializationWriter
+    {
+        public abstract void writeSerializedResult(Serializator ser);
+    }
+
+    public class ConsoleSerializationWriter : SerializationWriter
+    {
+        public override void writeSerializedResult(Serializator ser)
+        {
+            Console.WriteLine(ser.Result);
+        }
+    }
+
+    public class FileSerializationWriter : SerializationWriter
+    {
+        private string filePath;
+
+        public FileSerializationWriter(string pathToFile)
+        {
+            filePath = pathToFile;
+        }
+
+        public override void writeSerializedResult(Serializator ser)
+        {
+            using (FileStream fs = new FileStream(filePath, FileMode.Create))
+            {
+                byte[] byteArray = Encoding.Default.GetBytes(ser.Result);
+                fs.Write(Encoding.Default.GetBytes(ser.Result), 0, byteArray.Length);
+            }
+        }
     }
 }

@@ -59,13 +59,17 @@ namespace TestsProject
 
             Console.WriteLine("Finished");
 
+            SerializatorProject.SerializationWriter writer = new SerializatorProject.ConsoleSerializationWriter();
+
             SerializatorProject.Serializator sr = new SerializatorProject.XMLSerializator();
             sr.doSerialize(c._tracer.GetTraceResult());
-            Console.WriteLine(sr.Result);
+            writer.writeSerializedResult(sr);
 
+            writer = new SerializatorProject.FileSerializationWriter("result.json");
             sr = new SerializatorProject.JsonSerializator();
             sr.doSerialize(c._tracer.GetTraceResult());
-            Console.WriteLine(sr.Result);
+            writer.writeSerializedResult(sr);
+           
 
             Console.ReadLine();
         }
