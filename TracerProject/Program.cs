@@ -18,48 +18,66 @@ namespace TracerProject
     }
     #endregion
 
-    class A
+    public class Foo
     {
-        public ITracer it = new TimeTracer();
-        public void foo()
+        public Bar _bar;
+        public ITracer _tracer;
+
+        internal Foo(ITracer tracer)
         {
-            it.StartTrace();
-            Thread.Sleep(520);
-            it.StopTrace();
+            _tracer = tracer;
+            _bar = new Bar(_tracer);
         }
 
-        public void bar()
+        public void MyMethod()
         {
-            it.StartTrace();
-            Thread.Sleep(370);
-            it.StopTrace();
-        }
-
-        public void tool()
-        {
-            foo();
-            bar();
+            _tracer.StartTrace();
+            Thread.Sleep(230);
+            _bar.InnerMethod();
+            Thread.Sleep(30);
+            _tracer.StopTrace();
         }
     }
+
+    public class Bar
+    {
+        public ITracer _tracer;
+
+        internal Bar(ITracer tracer)
+        {
+            _tracer = tracer;
+        }
+
+        public void InnerMethod()
+        {
+            _tracer.StartTrace();
+            _tracer.StopTrace();
+        }
+    }
+
 
     #region TimeTracer
     public class TimeTracer : ITracer
     {
         static void Main(string[] args)
         {
-            A obj1 = new A();
-            obj1.foo();
-            obj1.bar();
-            obj1.foo();
-            obj1.foo();
-            obj1.bar();
-            obj1.tool();
+            TimeTracer tr = new TimeTracer();
+            Foo c = new Foo(tr);
+
+            Task task = new Task(c.MyMethod);
+            task.Start();
+            task.Wait();
+
+            c.MyMethod();
+
+            
+
             Console.WriteLine("Finished");
 
             XmlSerializer formatter = new XmlSerializer(typeof(TraceResult));
             using (FileStream fs = new FileStream("result.xml", FileMode.Create))
             {
-                formatter.Serialize(fs, obj1.it.GetTraceResult());
+                formatter.Serialize(fs, c._tracer.GetTraceResult());
 
                 Console.WriteLine("Объект сериализован");
             }
@@ -71,13 +89,11 @@ namespace TracerProject
         {
             StackTrace stackTrace = new StackTrace(false);
             List<Tuple<String, String>> methodsClassesNames = new List<Tuple<String, String>>();
-            string classWrapperName = stackTrace.GetFrame(2).GetMethod().DeclaringType.FullName;
             for (int i = 2; i < stackTrace.FrameCount - 1; ++i)
             {
                 string methodName = stackTrace.GetFrame(i).GetMethod().Name;
                 if ("InnerInvoke".Equals(methodName)) break;
                 string className = stackTrace.GetFrame(i).GetMethod().DeclaringType.FullName;
-                if (!classWrapperName.Equals(className)) break;
                 methodsClassesNames.Add(new Tuple<String, String>(className, methodName));
             }
             return methodsClassesNames;
@@ -243,6 +259,7 @@ namespace TracerProject
                     List<MethodInfo> nextBatch = currMethod.Methods;
                     this.Methods.RemoveAt(i);
                     this.Methods.InsertRange(i, nextBatch);
+                    i = i - 1;
                 }
                 else
                 {
